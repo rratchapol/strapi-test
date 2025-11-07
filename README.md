@@ -1,61 +1,218 @@
-# 🚀 Getting started with Strapi
+# 🚀 Strapi CMS - TEDFund Project
 
-Strapi comes with a full featured [Command Line Interface](https://docs.strapi.io/dev-docs/cli) (CLI) which lets you scaffold and manage your project in seconds.
+โปรเจกต์ Strapi CMS สำหรับจัดการข้อมูล Product และ Category พร้อม Docker และ PostgreSQL
 
-### `develop`
+## 📋 สิ่งที่ต้องมีก่อนเริ่มใช้งาน
 
-Start your Strapi application with autoReload enabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-develop)
+- Node.js (เวอร์ชัน 18.x - 22.x)
+- npm หรือ yarn
+- Docker และ Docker Compose (สำหรับรัน PostgreSQL)
 
+## 🛠️ วิธีการติดตั้งและใช้งาน
+
+### 1. Clone Repository
+
+```bash
+git clone <repository-url>
+cd strapi-docker
 ```
+
+### 2. ติดตั้ง Dependencies
+
+```bash
+npm install
+# หรือ
+yarn install
+```
+
+### 3. ตั้งค่า Environment Variables
+
+สร้างไฟล์ `.env` จาก `.env.example`:
+
+```bash
+cp .env.example .env
+```
+
+แก้ไขค่าใน `.env` (⚠️ **สำคัญ**: เปลี่ยนค่าเหล่านี้ให้เป็นค่าที่ปลอดภัย):
+
+```env
+HOST=0.0.0.0
+PORT=1337
+APP_KEYS="your-random-key-1,your-random-key-2"
+API_TOKEN_SALT=your-random-salt
+ADMIN_JWT_SECRET=your-admin-jwt-secret
+TRANSFER_TOKEN_SALT=your-transfer-token-salt
+JWT_SECRET=your-jwt-secret
+ENCRYPTION_KEY=your-encryption-key
+```
+
+**วิธีสร้าง Secret Keys:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+```
+
+### 4. เริ่มต้น PostgreSQL ด้วย Docker
+
+```bash
+docker-compose up -d
+```
+
+ตรวจสอบว่า PostgreSQL ทำงาน:
+```bash
+docker ps
+```
+
+**ข้อมูล Database:**
+- Host: `localhost`
+- Port: `5432`
+- Database: `strapi`
+- User: `ted`
+- Password: `tedpassword`
+
+### 5. เพิ่มการตั้งค่า Database ใน `.env`
+
+เพิ่มบรรทัดเหล่านี้ใน `.env`:
+
+```env
+DATABASE_CLIENT=postgres
+DATABASE_HOST=localhost
+DATABASE_PORT=5432
+DATABASE_NAME=strapi
+DATABASE_USERNAME=ted
+DATABASE_PASSWORD=tedpassword
+```
+
+### 6. เริ่มใช้งาน Strapi
+
+**Development Mode (มี auto-reload):**
+```bash
 npm run develop
-# or
+# หรือ
 yarn develop
 ```
 
-### `start`
-
-Start your Strapi application with autoReload disabled. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-start)
-
-```
+**Production Mode:**
+```bash
+npm run build
 npm run start
-# or
+# หรือ
+yarn build
 yarn start
 ```
 
-### `build`
+### 7. เข้าใช้งาน Admin Panel
 
-Build your admin panel. [Learn more](https://docs.strapi.io/dev-docs/cli#strapi-build)
+เปิดเบราว์เซอร์ไปที่: `http://localhost:1337/admin`
+
+ครั้งแรกจะต้องสร้าง Admin Account
+
+## 📦 โครงสร้างโปรเจกต์
 
 ```
+strapi-docker/
+├── config/              # ไฟล์ Configuration
+│   ├── database.ts      # ตั้งค่า Database
+│   ├── server.ts        # ตั้งค่า Server
+│   ├── admin.ts         # ตั้งค่า Admin Panel
+│   └── plugins.ts       # ตั้งค่า Plugins
+├── src/
+│   ├── api/
+│   │   ├── product/     # Content Type: Product
+│   │   └── category/    # Content Type: Category
+│   ├── admin/           # Admin UI Customization
+│   └── index.ts         # Entry Point
+├── database/
+│   └── migrations/      # Database Migrations
+├── public/              # Static Files
+├── docker-compose.yml   # Docker Configuration
+├── .env.example         # ตัวอย่างค่า Environment
+└── package.json
+```
+
+## 🗂️ Content Types ที่มีอยู่
+
+### Product
+- `name` (string) - ชื่อสินค้า
+- `description` (richtext) - รายละเอียด
+- `price` (decimal) - ราคา
+- `available` (boolean) - สถานะพร้อมขาย
+- `categories` (relation) - หมวดหมู่
+
+### Category
+- `name` (string) - ชื่อหมวดหมู่
+- `products` (relation) - สินค้าในหมวดหมู่
+
+## 🔧 คำสั่งที่ใช้บ่อย
+
+```bash
+# Development
+npm run develop
+
+# Build Admin Panel
 npm run build
-# or
-yarn build
+
+# Start Production Server
+npm run start
+
+# Open Strapi Console
+npm run console
+
+# Upgrade Strapi
+npm run upgrade
 ```
 
-## ⚙️ Deployment
+## 🐳 Docker Commands
 
-Strapi gives you many possible deployment options for your project including [Strapi Cloud](https://cloud.strapi.io). Browse the [deployment section of the documentation](https://docs.strapi.io/dev-docs/deployment) to find the best solution for your use case.
+```bash
+# เริ่ม PostgreSQL
+docker-compose up -d
 
+# หยุด PostgreSQL
+docker-compose down
+
+# ดูข้อมูล Logs
+docker-compose logs -f
+
+# ลบข้อมูลทั้งหมด (⚠️ ระวัง!)
+docker-compose down -v
 ```
-yarn strapi deploy
+
+## 🔐 Security
+
+⚠️ **สำคัญ:**
+- เปลี่ยนค่า Secret Keys ทั้งหมดใน `.env` ก่อนใช้งาน Production
+- อย่า commit ไฟล์ `.env` เข้า Git
+- ใช้ Strong Password สำหรับ Admin Account
+
+## 📚 เอกสารเพิ่มเติม
+
+- [Strapi Documentation](https://docs.strapi.io)
+- [Strapi Tutorials](https://strapi.io/tutorials)
+- [Plugin SEO](https://market.strapi.io/plugins/@strapi-plugin-seo)
+
+## 🆘 แก้ปัญหาเบื้องต้น
+
+### Database Connection Error
+- ตรวจสอบว่า Docker PostgreSQL ทำงานอยู่: `docker ps`
+- ตรวจสอบค่า Database ใน `.env` ให้ตรงกับ `docker-compose.yml`
+
+### Port 1337 ถูกใช้งาน
+เปลี่ยน PORT ในไฟล์ `.env`:
+```env
+PORT=3000
 ```
 
-## 📚 Learn more
+### Admin Panel ไม่ขึ้น
+ลอง build ใหม่:
+```bash
+npm run build
+npm run develop
+```
 
-- [Resource center](https://strapi.io/resource-center) - Strapi resource center.
-- [Strapi documentation](https://docs.strapi.io) - Official Strapi documentation.
-- [Strapi tutorials](https://strapi.io/tutorials) - List of tutorials made by the core team and the community.
-- [Strapi blog](https://strapi.io/blog) - Official Strapi blog containing articles made by the Strapi team and the community.
-- [Changelog](https://strapi.io/changelog) - Find out about the Strapi product updates, new features and general improvements.
+## 📝 License
 
-Feel free to check out the [Strapi GitHub repository](https://github.com/strapi/strapi). Your feedback and contributions are welcome!
-
-## ✨ Community
-
-- [Discord](https://discord.strapi.io) - Come chat with the Strapi community including the core team.
-- [Forum](https://forum.strapi.io/) - Place to discuss, ask questions and find answers, show your Strapi project and get feedback or just talk with other Community members.
-- [Awesome Strapi](https://github.com/strapi/awesome-strapi) - A curated list of awesome things related to Strapi.
+ดูรายละเอียดใน `license.txt`
 
 ---
 
-<sub>🤫 Psst! [Strapi is hiring](https://strapi.io/careers).</sub>
+💡 **Tips:** ใช้ `yarn develop` แทน `npm run develop` เพื่อความเร็วในการติดตั้ง packages
